@@ -17,21 +17,29 @@ defmodule Rpcs.DirLoad do
       List.last(path) |> String.starts_with?("template")
     end
 
-    concat_read_decode = fn (base, type, tail) ->
-      Path.join([base, type | tail])
-      |> File.read!
-      |> Jason.decode!
-    end
-
-    case_reader = fn path ->
-      request = concat_read_decode.(input_dir_abs_path, "request", path)
-      response = concat_read_decode.(input_dir_abs_path, "response", path)
-
-      %{
-        path: path,
-        request: request,
-        response: response
-      }
+    load_case = fn (base_path, file_path) ->
+      request_path  = Path.join([base_path, "request"  | file_path])
+      response_path = Path.join([base_path, "response" | file_path])
+      with {:ok, request_bin}  <- File.read(request_path),
+           {:ok, request}      <- Jason.decode(request_bin),
+           {:ok, response_bin} <- File.read(response_path),
+           {:ok, response}     <- Jason.decode(response_bin)
+      do
+        {
+          :ok, %{
+            path: file_path,
+            request: request,
+            response: response
+          }
+        }
+      else
+        {:error, reason} -> {
+          :error, %{
+            path: file_path,
+            reason: reason
+          }
+        }
+      end
     end
 
     {_templates, directs} = input_dir_abs_path
@@ -41,14 +49,22 @@ defmodule Rpcs.DirLoad do
     |> Enum.map(&String.split(&1, ~r[/]))
     |> Enum.split_with(fn r -> template_distinguisher.(r) end)
 
-    cases = Enum.map(directs, fn d -> case_reader.(d) end)
+    cases = Enum.map(directs, fn casee -> load_case.(input_dir_abs_path, casee) end)
 
-    test_case = fn (network_url, casee) ->
-      actual_response = HTTPoison.post!(network_url, Jason.encode!(casee.request), [{"Content-Type", "application/json"}])
-      IO.inspect Jason.decode!(actual_response.body)
-      IO.inspect casee.response
-      Jason.decode!(actual_response.body) == casee.response
+    IO.inspect(cases)
+
+    test_case = fn (network_url, %{request: request, response: expected}) ->
+      headers = [{"Content-Type", "application/json"}]
+      response = HTTPoison.post!(network_url, Jason.encode!(request), headers)
+      body = Jason.decode! response.body
+
+      body == expected
     end
+
+    cases = List.flatten Enum.map(cases, fn
+      {:ok, casee} -> [casee]
+      {:error, _} -> []
+    end)
 
     results = Enum.map(cases, fn c -> test_case.(network_url, c) end)
 
