@@ -7,10 +7,9 @@ defmodule Rpcs.Application do
   def start(_type, _args) do
     Logger.info("app starting...")
 
-    environment = Application.get_env(:rpcs, :environment)
-
     children = [
-      {Rpcs.DirLoad, [environment.network_url, environment.input_dir]}
+      {Plug.Cowboy, scheme: :http, plug: Rpcs.Server, options: [port: 6868]},
+      {Rpcs.DirLoad, []}
     ]
 
     Supervisor.start_link(children, [strategy: :one_for_one])

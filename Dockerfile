@@ -10,7 +10,10 @@ COPY mix.exs mix.lock ./
 
 COPY config ./config
 COPY lib ./lib
-COPY input ./input
+
+# FIXME: copy only one dir
+COPY input_testnet ./input_testnet
+COPY input_mainnet ./input_mainnet
 
 RUN \
   mix deps.get --only prod && \
@@ -18,7 +21,9 @@ RUN \
 
 ARG network_url="https://api.testnet.velas.com"
 ENV NETWORK_URL ${network_url}
-ARG input_dir="./input"
+ARG input_dir="./input_testnet"
 ENV INPUT_DIR ${input_dir} 
+
+EXPOSE 6868
 
 CMD ["mix", "run", "--no-halt"]

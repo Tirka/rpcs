@@ -6,10 +6,10 @@ defmodule Rpcs.DirLoad do
     GenServer.start(__MODULE__, state, name: __MODULE__)
   end
 
-  def init(state) do
+  def init(_state) do
     Logger.info("directory loader starting...")
 
-    [network_url, input_dir] = state
+    input_dir = Application.get_env(:rpcs, :environment).input_dir
 
     input_dir_abs_path = Path.expand(input_dir)
 
@@ -51,27 +51,12 @@ defmodule Rpcs.DirLoad do
 
     cases = Enum.map(directs, fn casee -> load_case.(input_dir_abs_path, casee) end)
 
-    IO.inspect(cases)
-
-    test_case = fn (network_url, %{request: request, response: expected}) ->
-      headers = [{"Content-Type", "application/json"}]
-      response = HTTPoison.post!(network_url, Jason.encode!(request), headers)
-      body = Jason.decode! response.body
-
-      body == expected
-    end
-
-    cases = List.flatten Enum.map(cases, fn
-      {:ok, casee} -> [casee]
-      {:error, _} -> []
-    end)
-
-    results = Enum.map(cases, fn c -> test_case.(network_url, c) end)
-
-    IO.inspect results
-
     Logger.info("directory loader started")
 
     {:ok, cases}
+  end
+
+  def handle_call(:cases, _from, state) do
+    {:reply, state, state}
   end
 end
