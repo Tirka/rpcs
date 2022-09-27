@@ -7,8 +7,10 @@ defmodule Rpcs.Application do
   def start(_type, _args) do
     Logger.info("app starting...")
 
+    environment = Application.get_env(:rpcs, :environment)
+
     children = [
-      {Rpcs.DirLoad, [Application.get_env(:rpcs, :input_dir)]}
+      {Rpcs.DirLoad, [environment.network_url, environment.input_dir]}
     ]
 
     Supervisor.start_link(children, [strategy: :one_for_one])
