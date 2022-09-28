@@ -17,7 +17,7 @@ mix run --no-halt
 ### Build and run using Docker
 ```bash
 $ docker build \
-    --build-arg network_url="https://api.testnet.velas.com" \
+    --build-arg network_url="https://api.mainnet.velas.com" \
     -t rename_me .
 $ docker run -it -p 0.0.0.0:6868:6868 rename_me
 ```

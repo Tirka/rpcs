@@ -10,12 +10,20 @@ defmodule Rpcs.Server do
 
     cases = GenServer.call(Rpcs.DirLoad, :cases)
 
-    do_test = fn (network_url, %{request: request, response: expected}) ->
+    do_test = fn (network_url, %{path: path, request: request, response: expected}) ->
       headers = [{"Content-Type", "application/json"}]
       response = HTTPoison.post!(network_url, Jason.encode!(request), headers)
-      body = Jason.decode! response.body
+      actual = Jason.decode! response.body
 
-      body == expected
+      %{
+        path: path,
+        request: Jason.encode!(request),
+        response: %{
+          expected: Jason.encode!(expected),
+          actual: Jason.encode!(actual)
+        },
+        success: expected == actual
+      }
     end
 
     cases = List.flatten Enum.map(cases, fn
@@ -23,12 +31,10 @@ defmodule Rpcs.Server do
       {:error, _} -> []
     end)
 
-    _results = Enum.map(cases, fn c -> do_test.(network_url, c) end)
-
-    IO.inspect _results
+    cases = Enum.map(cases, fn c -> do_test.(network_url, c) end)
 
     conn
     |> put_resp_content_type("text/html")
-    |> send_resp(200, EEx.eval_file("./eex/index.eex", cases: cases))
+    |> send_resp(200, EEx.eval_file("./eex/index.heex", cases: cases))
   end
 end
