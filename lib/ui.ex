@@ -1,4 +1,4 @@
-defmodule Rpcs.Server do
+defmodule Rpcs.UI do
   import Plug.Conn
 
   def init(options) do
@@ -6,7 +6,7 @@ defmodule Rpcs.Server do
   end
 
   def call(conn, _opts) do
-    network_url = Application.get_env(:rpcs, :environment).network_url
+    network_url = Application.get_env(:rpcs, :env).network_url
 
     cases = GenServer.call(Rpcs.DirLoad, :cases)
 
@@ -17,10 +17,10 @@ defmodule Rpcs.Server do
 
       %{
         path: path,
-        request: Jason.encode!(request),
+        request: request,
         response: %{
-          expected: Jason.encode!(expected),
-          actual: Jason.encode!(actual)
+          expected: expected,
+          actual: actual
         },
         success: expected == actual
       }
@@ -35,6 +35,6 @@ defmodule Rpcs.Server do
 
     conn
     |> put_resp_content_type("text/html")
-    |> send_resp(200, EEx.eval_file("./eex/index.heex", cases: cases))
+    |> send_resp(200, EEx.eval_file("./html/index.heex", cases: cases))
   end
 end

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Tasks</title>
+</head>
+<body>
+   <div class="space-y-5">
+      <%= for c <- cases do %>
+      <div class="mx-auto px-4 font-mono">
+         <p class="font-semibold <%= if c.success, do: "text-green-900", else: "text-red-700" %>"><span><%= Enum.reduce(c.path, &(&2 <> "<span>/</span>" <> &1)) %></span></p>
+         <p class="text-sm">Request</p>
+         <pre class="text-[10px] overflow-x-scroll"><%= Jason.encode!(c.request, pretty: true) %></pre>
+         <p class="text-sm">Expected Response</p>
+         <pre class="text-[10px] overflow-x-scroll"><%= Jason.encode!(c.response.expected, pretty: true) %></pre>
+         <p class="text-sm">Actual Response</p>
+         <pre class="text-[10px] overflow-x-scroll"><%= Jason.encode!(c.response.actual, pretty: true) %></pre>
+      </div>
+      <% end %>
+   </div>
+</body>
+</html>

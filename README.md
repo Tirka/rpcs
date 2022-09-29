@@ -19,5 +19,8 @@ mix run --no-halt
 $ docker build \
     --build-arg network_url="https://api.mainnet.velas.com" \
     -t rename_me .
-$ docker run -it -p 0.0.0.0:6868:6868 rename_me
+$ docker run -it \
+    -p 0.0.0.0:6868:6868 \
+    -p 0.0.0.0:9568:9568 \
+    rename_me
 ```

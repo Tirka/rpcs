@@ -10,7 +10,7 @@ COPY mix.exs mix.lock ./
 
 COPY config ./config
 COPY lib ./lib
-COPY eex ./eex
+COPY html ./html
 
 # FIXME: copy only one dir
 # COPY input_testnet ./input_testnet
@@ -26,5 +26,6 @@ ARG input_dir="./input_mainnet"
 ENV INPUT_DIR ${input_dir}
 
 EXPOSE 6868
+EXPOSE 9568
 
 CMD ["mix", "run", "--no-halt"]

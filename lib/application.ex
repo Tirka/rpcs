@@ -8,8 +8,9 @@ defmodule Rpcs.Application do
     Logger.info("app starting...")
 
     children = [
-      {Plug.Cowboy, scheme: :http, plug: Rpcs.Server, options: [port: 6868]},
-      {Rpcs.DirLoad, []}
+      {Rpcs.DirLoad, []},
+      {Rpcs.Telemetry, []},
+      {Plug.Cowboy, scheme: :http, plug: Rpcs.UI, options: [port: 6868]}
     ]
 
     Supervisor.start_link(children, [strategy: :one_for_one])
