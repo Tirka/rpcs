@@ -24,6 +24,7 @@ ARG network_url="https://api.mainnet.velas.com"
 ENV NETWORK_URL ${network_url}
 ARG input_dir="./input_mainnet"
 ENV INPUT_DIR ${input_dir}
+ENV TIMEOUT_MS 5
 
 EXPOSE 6868
 EXPOSE 9568

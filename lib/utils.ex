@@ -13,14 +13,12 @@ defmodule Rpcs.Utils do
       request <- Jason.decode(request_bin)
       response_bin <- File.read(response_path)
       response <- Jason.decode(response_bin)
-
-      casee = %{
+    after
+      %{
         path: file_path,
         request: request,
         response: response
       }
-    after
-      casee
     end
   end
 
@@ -42,14 +40,24 @@ defmodule Rpcs.Utils do
   end
 
   def do_network_test(%{path: path, request: request, response: expected}) do
-    network_url = Application.get_env(:rpcs, :env).network_url
+    %{timeous_ms: timeous_ms, network_url: network_url} = Application.get_env(:rpcs, :env)
     headers = [{"Content-Type", "application/json"}]
 
     OK.for do
+      req_start = :os.system_time()
       response <- HTTPoison.post(network_url, Jason.encode!(request), headers)
-      actual <- Jason.decode(response)
+      req_end = :os.system_time()
+      actual <- Jason.decode(response.body)
     after
-      actual
+      %{
+        path: path,
+        request: request,
+        response: %{
+          expected: expected,
+          actual: actual
+        },
+        success: expected == actual && (req_end - req_start) < timeous_ms
+      }
     end
   end
 end

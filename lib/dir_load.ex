@@ -8,7 +8,20 @@ defmodule Rpcs.DirLoad do
 
   def init(_state) do
     cases = Rpcs.Utils.do_read_input_dir()
-    {:ok, cases}
+
+    good_cases = List.flatten Enum.map(cases, fn
+      {:ok, casee} -> [casee]
+      _ -> []
+    end)
+
+    bad_cases = List.flatten Enum.map(cases, fn
+      {:error, casee} -> [casee]
+      _ -> []
+    end)
+
+    if !Enum.empty?(bad_cases), do: Logger.warn("Can't read of parse some of test requests")
+
+    {:ok, good_cases}
   end
 
   def handle_call(:cases, _from, state) do

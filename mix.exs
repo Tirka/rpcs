@@ -24,7 +24,7 @@ defmodule Rpcs.MixProject do
     [
       {:jason, "~> 1.4"},
       {:httpoison, "~> 1.8"},
-      {:ok, "~> 2.3"},
+      {:ok, git: "https://github.com/Tirka/OK.git", branch: "add-methods"},
       {:plug_cowboy, "~> 2.0"},
       {:telemetry, "~> 1.0"},
       {:telemetry_metrics, "~> 0.6.1"},

@@ -7,6 +7,7 @@ defmodule Rpcs.Metrics do
   def emit_health_down() do
     :telemetry.execute([:network], %{health: 0})
     :telemetry.execute([:network, :health, :timestamp], %{seconds: now()})
+    :telemetry.execute([:network, :alarms], %{total: 1})
   end
 
   defp now, do: :os.system_time(:seconds)
@@ -22,8 +23,9 @@ defmodule Rpcs.Telemetry do
 
   def init(_arg) do
     metrics = [
-      last_value("network.health"),
-      last_value("network.health.timestamp.seconds")
+      counter("network.alarms.total", description: "Total amount of unsuccessful RPC check runs"),
+      last_value("network.health.timestamp.seconds", description: "Last time RPC health check run"),
+      last_value("network.health", description: "Last result of RPC health check")
     ]
 
     children = [
